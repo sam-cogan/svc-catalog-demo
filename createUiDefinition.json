@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [],
+    "steps": [
+      {
+        "name": "aksSettings",
+        "label": "AKS Settings",
+        "elements": [
+          {
+            "name": "aksClusterName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "AKS Cluster Name",
+            "defaultValue": "",
+            "toolTip": "Name of the AKS Cluster",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "aksNodeCount",
+            "type": "Microsoft.Common.TextBox",
+            "label": "AKS Node Count",
+            "defaultValue": "",
+            "toolTip": "Number of nodes in the AKS Cluster",
+            "constraints": {
+              "required": true,
+              "regex": "^[0-9]*$",
+              "validationMessage": "Please provide a valid number"
+            }
+          },
+
+          {
+            "name": "aksNodeSize",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Size",
+            "toolTip": "",
+            "recommendedSizes": ["Standard_D1", "Standard_D2", "Standard_D3"],
+            "constraints": {
+              "allowedSizes": []
+            },
+            "options": {
+              "hideDiskTypeFilter": false
+            },
+            "osPlatform": "Windows",
+            "imageReference": {
+              "publisher": "MicrosoftWindowsServer",
+              "offer": "WindowsServer",
+              "sku": "2012-R2-Datacenter"
+            },
+            "count": 2,
+            "visible": true
+          },
+          {
+            "name": "aksNodeOSDiskSize",
+            "type": "Microsoft.Common.TextBox",
+            "label": "AKS Node OS Disk Size",
+            "defaultValue": "",
+            "toolTip": "OS Disk Size of the nodes in the AKS Cluster",
+            "constraints": {
+              "required": true,
+              "regex": "^[0-9]*$",
+              "validationMessage": "Please provide a valid number"
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "resourceGroupName": "[resourceGroup().name]",
+      "aksClusterName": "[steps('aksSettings').aksClusterName]",
+      "aksNodeCount": "[steps('aksSettings').aksNodeCount]",
+      "aksNodeSize": "[steps('aksSettings').aksNodeSize]",
+      "aksNodeOSDiskSize": "[steps('aksSettings').aksNodeOSDiskSize]"
+    }
+  }
+}

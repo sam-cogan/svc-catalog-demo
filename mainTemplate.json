@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.13.1.58284",
+      "templateHash": "84460354840964471"
+    }
+  },
+  "parameters": {
+    "aksClusterName": {
+      "type": "string"
+    },
+    "aksNodeCount": {
+      "type": "string",
+      "defaultValue": "1"
+    },
+    "aksNodeSize": {
+      "type": "string"
+    },
+    "aksNodeOSDiskSize": {
+      "type": "string",
+      "defaultValue": "32"
+    },
+    "resourceGroupName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-02-01",
+      "name": "[parameters('resourceGroupName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "192.168.0.0/16"
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2023-02-01",
+      "name": "[format('{0}/{1}', parameters('resourceGroupName'), 'aksSubnet')]",
+      "properties": {
+        "addressPrefix": "192.168.0.0/20"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('resourceGroupName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2022-05-02-preview",
+      "name": "[parameters('aksClusterName')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "dnsPrefix": "[parameters('aksClusterName')]",
+        "agentPoolProfiles": [
+          {
+            "name": "agentpool",
+            "osDiskSizeGB": "[int(parameters('aksNodeOSDiskSize'))]",
+            "count": "[int(parameters('aksNodeCount'))]",
+            "vmSize": "[parameters('aksNodeSize')]",
+            "osType": "Linux",
+            "mode": "System",
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('resourceGroupName'), 'aksSubnet')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('resourceGroupName'), 'aksSubnet')]"
+      ]
+    }
+  ]
+}
