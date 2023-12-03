@@ -70,7 +70,6 @@
     ],
     "outputs": {
       "location": "[location()]",
-      "resourceGroupName": "[resourceGroup().name]",
       "aksClusterName": "[steps('aksSettings').aksClusterName]",
       "aksNodeCount": "[steps('aksSettings').aksNodeCount]",
       "aksNodeSize": "[steps('aksSettings').aksNodeSize]",

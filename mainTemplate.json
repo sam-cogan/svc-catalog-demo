@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "84460354840964471"
+      "templateHash": "17266413628780688756"
     }
   },
   "parameters": {
@@ -23,9 +23,6 @@
       "type": "string",
       "defaultValue": "32"
     },
-    "resourceGroupName": {
-      "type": "string"
-    },
     "location": {
       "type": "string",
       "defaultValue": "westeurope"
@@ -35,7 +32,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-02-01",
-      "name": "[parameters('resourceGroupName')]",
+      "name": "[format('{0}-vnet', parameters('aksClusterName'))]",
       "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
@@ -48,12 +45,12 @@
     {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2023-02-01",
-      "name": "[format('{0}/{1}', parameters('resourceGroupName'), 'aksSubnet')]",
+      "name": "[format('{0}/{1}', format('{0}-vnet', parameters('aksClusterName')), 'aksSubnet')]",
       "properties": {
         "addressPrefix": "192.168.0.0/20"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('resourceGroupName'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', parameters('aksClusterName')))]"
       ]
     },
     {
@@ -61,11 +58,20 @@
       "apiVersion": "2022-05-02-preview",
       "name": "[parameters('aksClusterName')]",
       "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic",
+        "tier": "Paid"
+      },
       "identity": {
         "type": "SystemAssigned"
       },
       "properties": {
         "dnsPrefix": "[parameters('aksClusterName')]",
+        "oidcIssuerProfile": {
+          "enabled": true
+        },
+        "enableRBAC": true,
+        "publicNetworkAccess": "Disabled",
         "agentPoolProfiles": [
           {
             "name": "agentpool",
@@ -74,12 +80,12 @@
             "vmSize": "[parameters('aksNodeSize')]",
             "osType": "Linux",
             "mode": "System",
-            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('resourceGroupName'), 'aksSubnet')]"
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', parameters('aksClusterName')), 'aksSubnet')]"
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('resourceGroupName'), 'aksSubnet')]"
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', parameters('aksClusterName')), 'aksSubnet')]"
       ]
     }
   ]
